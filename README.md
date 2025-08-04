@@ -25,8 +25,7 @@ Each file will be formatted like this:
 ## 🧱 Build
 
 To build the extension locally:
-
-1. Install `vsce` if you haven’t already:
+Install `vsce` if you haven’t already:
 
    ```bash
    npm install -g vsce
