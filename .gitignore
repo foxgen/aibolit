@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# VS Code
+.vscode/
+.history/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Build artifacts (если собираешь вручную)
+dist/
+out/
+*.vsix
+
+# TypeScript build info (если используешь .ts)
+*.tsbuildinfo
+
+# Test output (опционально)
+coverage/
+test/**/*.log

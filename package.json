@@ -1,0 +1,33 @@
+{
+  "name": "aibolit",
+  "displayName": "AI : Copy File Content",
+  "description": "Копирует содержимое файлов в формат, удобный для AI",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.70.0" },
+  "activationEvents": [
+    "onCommand:extension.copyFileContentsAI"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.copyFileContentsAI",
+        "title": "Copy File Contents (AI Format)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "extension.copyFileContentsAI",
+          "group": "custom-ai-group@100"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "npx @vscode/vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.0.0"
+  }
+}
