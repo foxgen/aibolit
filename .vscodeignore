@@ -1,10 +1,10 @@
 .vscode/**
-.vscode-test/**
 test/**
+*.vsix
+*.zip
+node_modules/@vscode/**
+.github/**
 .gitignore
-.yarnrc
-vsc-extension-quickstart.md
-**/jsconfig.json
-**/*.map
-**/eslint.config.mjs
-**/.vscode-test.*
+.gitattributes
+.editorconfig
+*.tgz

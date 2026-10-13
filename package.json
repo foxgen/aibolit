@@ -1,31 +1,169 @@
 {
   "name": "aibolit",
-  "displayName": "AI : Copy File Content",
-  "description": "Копирует содержимое файлов в формат, удобный для AI",
-  "version": "0.0.1",
-  "engines": { "vscode": "^1.70.0" },
-  "activationEvents": [
-    "onCommand:extension.copyFileContentsAI"
-  ],
+  "displayName": "Aibolit: AI Context",
+  "description": "Copy AI instructions, apply atomic file actions, and run approved scripts with stored outputs",
+  "version": "0.3.4",
+  "publisher": "local-aibolit",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
   "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:extension.copyFileContentsAI",
+    "onCommand:aibolit.executeClipboardActions",
+    "onCommand:aibolit.copyInstructions",
+    "onCommand:aibolit.editInstructions",
+    "onCommand:aibolit.editBaseInstructions",
+    "onCommand:aibolit.editCustomInstructions",
+    "onCommand:aibolit.editProjectInstructions",
+    "onCommand:aibolit.resetInstructions",
+    "onCommand:aibolit.copyOutput",
+    "onCommand:aibolit.deleteOutputs"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "contributes": {
     "commands": [
       {
         "command": "extension.copyFileContentsAI",
-        "title": "Copy File Contents (AI Format)"
+        "category": "Aibolit",
+        "title": "Copy code"
+      },
+      {
+        "command": "aibolit.copyInstructions",
+        "category": "Aibolit",
+        "title": "Copy instructions"
+      },
+      {
+        "command": "aibolit.executeClipboardActions",
+        "category": "Aibolit",
+        "title": "Apply context"
+      },
+      {
+        "command": "aibolit.copyOutput",
+        "category": "Aibolit",
+        "title": "Copy..."
+      },
+      {
+        "command": "aibolit.deleteOutputs",
+        "category": "Aibolit",
+        "title": "Delete..."
+      },
+      {
+        "command": "aibolit.editInstructions",
+        "category": "Aibolit",
+        "title": "Edit instructions..."
+      },
+      {
+        "command": "aibolit.editBaseInstructions",
+        "category": "Aibolit",
+        "title": "Edit base instructions"
+      },
+      {
+        "command": "aibolit.editCustomInstructions",
+        "category": "Aibolit",
+        "title": "Edit custom instructions"
+      },
+      {
+        "command": "aibolit.editProjectInstructions",
+        "category": "Aibolit",
+        "title": "Edit project instructions"
+      },
+      {
+        "command": "aibolit.resetInstructions",
+        "category": "Aibolit",
+        "title": "Reset instructions..."
+      }
+    ],
+    "submenus": [
+      {
+        "id": "aibolit.actionsMenu",
+        "label": "Aibolit"
+      },
+      {
+        "id": "aibolit.outputMenu",
+        "label": "Output"
       }
     ],
     "menus": {
       "explorer/context": [
         {
+          "submenu": "aibolit.actionsMenu",
+          "group": "aibolit@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "aibolit.actionsMenu",
+          "group": "aibolit@1",
+          "when": "resourceScheme == file"
+        }
+      ],
+      "aibolit.actionsMenu": [
+        {
           "command": "extension.copyFileContentsAI",
-          "group": "custom-ai-group@100"
+          "group": "navigation@1",
+          "when": "resourceScheme == file"
+        },
+        {
+          "command": "aibolit.copyInstructions",
+          "group": "navigation@2"
+        },
+        {
+          "command": "aibolit.executeClipboardActions",
+          "group": "navigation@3"
+        },
+        {
+          "submenu": "aibolit.outputMenu",
+          "group": "navigation@4"
+        },
+        {
+          "command": "aibolit.editInstructions",
+          "group": "9_settings@1"
+        }
+      ],
+      "aibolit.outputMenu": [
+        {
+          "command": "aibolit.copyOutput",
+          "group": "navigation@1"
+        },
+        {
+          "command": "aibolit.deleteOutputs",
+          "group": "navigation@2"
         }
       ]
+    },
+    "configuration": {
+      "title": "Aibolit",
+      "properties": {
+        "aibolit.scripts.pythonCommand": {
+          "type": "string",
+          "default": "python",
+          "description": "Python interpreter executable (Windows: python or py)."
+        },
+        "aibolit.scripts.bashCommand": {
+          "type": "string",
+          "default": "bash",
+          "description": "Bash executable (Git Bash or WSL as configured)."
+        },
+        "aibolit.scripts.powershellCommand": {
+          "type": "string",
+          "default": "pwsh",
+          "description": "PowerShell executable (pwsh or powershell.exe)."
+        }
+      }
     }
   },
   "scripts": {
-    "build": "npx @vscode/vsce package"
+    "check": "node --check extension.js && node --check src/engine.js && node --check src/file-access.js && node --check src/transaction.js && node --check src/protocol.js && node --check src/instructions.js && node --check src/actions/index.js && node --check src/actions/create-file.js && node --check src/actions/patch.js && node --check src/scripts/request.js && node --check src/scripts/storage.js && node --check src/scripts/runner.js && node --check src/scripts/outputs.js && node --check src/scripts/execution.js && node --check src/scripts/preview.js",
+    "test": "node --test",
+    "build": "vsce package --allow-missing-repository --no-rewrite-relative-links"
+  },
+  "dependencies": {
+    "diff": "^8.0.2"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.0.0"

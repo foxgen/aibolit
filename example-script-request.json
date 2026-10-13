@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "kind": "script",
+  "requestId": "demo-001",
+  "commands": [
+    {
+      "id": "project-structure",
+      "script": {
+        "id": "project-structure",
+        "language": "python",
+        "content": "from pathlib import Path\nfor item in sorted(Path('.').iterdir()):\n    print(('DIR  ' if item.is_dir() else 'FILE ') + item.name)\n"
+      }
+    },
+    {
+      "id": "environment",
+      "script": {
+        "id": "environment",
+        "language": "python",
+        "content": "import platform\nprint('Python:', platform.python_version())\nprint('OS:', platform.system())\n"
+      }
+    }
+  ]
+}

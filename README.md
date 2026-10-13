@@ -1,45 +1,117 @@
-# Aibolit
+# Aibolit — AI Context for VS Code
 
-**Aibolit** is a Visual Studio Code extension that helps you copy the content of selected files into a structured format, optimized for use in AI chat interfaces like ChatGPT or Claude.
+**Текущая версия: 0.3.4.** Локальное расширение VS Code для обмена кодом,
+файловыми изменениями и результатами запуска скриптов с ИИ через буфер обмена.
+API-ключи и облачный сервер расширения не нужны.
 
-## 🚀 Features
+**Как это работает:** пользователь копирует инструкции или код из VS Code в чат ИИ,
+получает JSON-ответ, вставляет его в буфер обмена и выбирает **Aibolit → Apply context**.
+Для скриптов Aibolit запрашивает разрешение перед запуском, а результат автоматически
+копирует обратно в буфер обмена.
 
-- Select one or more files in the **File Explorer**.
-- Run a command to copy their contents in a clean, formatted style.
-- Ideal for sending code to AI chats for review, refactoring, or debugging.
+> **Безопасность:** скрипты ИИ запускаются с правами текущего пользователя, без песочницы.
+> Перед подтверждением прочитайте код и параметры запуска. Не отправляйте в чат
+> секреты, случайно попавшие в исходники или результаты команд.
 
-## 🧑‍💻 How to Use
+## Установка из исходников (Windows)
 
-1. Open the File Explorer in VS Code.
-2. Select one or more files.
-3. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac).
-4. Run the command: `Aibolit: Copy Selected Files for AI`.
-5. Paste the copied result into your AI chat window.
+Нужны VS Code, Node.js и npm. Для выполнения Python-скриптов нужен Python,
+доступный через `python` (для других языков — соответствующий интерпретатор).
+Откройте PowerShell в папке с `package.json`:
 
-Each file will be formatted like this:
-
----- BEGIN FILE: path/to/file.js ----
-<file content here>
----- END FILE: path/to/file.js ----
-
-## 🧱 Build
-
-To build the extension locally:
-Install `vsce` if you haven’t already:
-
-   ```bash
-   npm install -g vsce
-Install dependencies:
-
+```powershell
 npm install
-Package the extension:
+npm run check
+npm test
+npm run build
+code --install-extension .\aibolit-0.3.4.vsix --force
+```
 
-vsce package
-This will generate a .vsix file (e.g. aibolit-0.0.1.vsix).
+При блокировке `npm.ps1` используйте `npm.cmd` вместо `npm`.
+После установки выполните в VS Code **Developer: Reload Window**.
+Это инструкция для локальной сборки `.vsix`, а не установки из Marketplace.
 
-To install the packaged extension manually:
+## Меню Aibolit
 
-code --install-extension aibolit-0.0.1.vsix
-To uninstall it:
+- **Copy instructions** — скопировать протокол и пользовательские/проектные правила в ИИ. После обновления с 0.2.x выполните один раз **Edit instructions → Reset instructions → Base**, чтобы установить новый протокол со скриптами: персональный `protocol.md` не перезаписывается автоматически.
+- **Copy code** — скопировать выбранные файлы с относительными путями.
+- **Apply context** — применить файловый JSON (`version:2, actions`) или выполнить запрос скриптов (`version:3, kind:script`).
+- **Output → Copy... / Delete...** — скопировать последний или выбранные результаты либо удалить выбранные/все выполнения.
+- **Edit instructions...** — Base, Custom, Project и Reset. Проектные правила хранятся в `.aibolit/instructions.md` проекта, общие — в `globalStorageUri`.
 
-code --uninstall-extension your-publisher.aibolit
+## Запрос скрипта от ИИ
+
+```json
+{
+  "version": 3,
+  "kind": "script",
+  "requestId": "inspect-001",
+  "commands": [
+    {
+      "id": "tree",
+      "script": {
+        "id": "project-tree",
+        "language": "python",
+        "content": "from pathlib import Path\nfor x in sorted(Path('.').iterdir()): print(x.name)\n"
+      }
+    }
+  ]
+}
+```
+
+Для проверки нескольких команд подряд также есть готовый файл `example-script-request.json` (два безопасных информационных скрипта). После копирования JSON выберите **Apply context**. Aibolit попросит подтверждение непосредственно перед запуском каждого нового скрипта (код и параметры запуска доступны в предпросмотре только для чтения; после открытия предпросмотра подтверждение немодальное, чтобы можно было изучить код), выполнит команды по очереди и скопирует структурированный ответ в буфер. Вставьте его в чат ИИ. Для повторного использования: `"scriptId": "project-tree"` вместо объекта `script`, и новый `requestId`.
+
+### Предпросмотр перед запуском
+
+При первом запросе разрешения можно выбрать **View script**: откроется вкладка из виртуальной файловой системы
+`aibolit-preview:` с принудительным режимом **только для чтения** (`isReadonly: true`). В начале вкладки показаны ID скрипта,
+полный SHA-256, рабочий каталог (`cwd`) и аргументы (`args`); строка-маркер
+отделяет служебные комментарии от **точного исходного кода**, который будет
+запускаться. Служебные комментарии не исполняются.
+
+После открытия вкладки запрос подтверждения становится **немодальным**, чтобы
+можно было прокрутить код, затем выбрать **Approve and run** либо **Cancel**.
+Закрытие запроса без подтверждения тоже означает отказ. Редактировать
+предпросмотр нельзя: при необходимости измените сам запрос ИИ и повторите с
+новым `requestId`. Для ранее разрешённого сочетания кода, каталога и аргументов
+повторное подтверждение не требуется.
+
+Поддерживаются `python` (`python`), `bash` (`bash`) и `powershell` (`pwsh`). Исполняемые файлы можно изменить в настройках `aibolit.scripts.*Command`. Для `bash` и `pwsh` на Windows нужны установленные интерпретаторы. Скрипты используют обычные stdout, stderr, exitCode; специальный API им не нужен.
+
+В многокорневом workspace требуется `"root": "имя папки"` на верхнем уровне запроса.
+
+## Результаты и очистка
+
+Результаты каждого запуска хранятся в `ExtensionContext.storageUri` отдельно для текущего workspace:
+
+```text
+scripts/                     # сохранённые скрипты и разрешения
+runs/exec-<uuid>/
+  request.json               # исходный запрос
+  result.json                # статусы команд, exitCode, ссылки на логи
+  commands/<id>/stdout.log
+  commands/<id>/stderr.log
+```
+
+`result.json` создаёт Aibolit. При копировании output в JSON включаются **тексты** stdout/stderr, поскольку ИИ не имеет доступа к локальным файлам. После выполнения результат копируется автоматически; меню **Output → Copy... / Delete...** позволяет повторить копирование или удалить результаты. **Output → Delete... удаляет только `runs/`**, сохранённые скрипты остаются. Автоматического удаления по времени нет.
+
+Лимиты: **2 МиБ** stdout+stderr на выполнение одной команды, **50 МиБ** всей истории и **64 КиБ** на текст результата в буфере. При переполнении вывода процесс останавливается; при заполненной истории пользователь должен очистить старые запуски вручную. Запись логов ограничена во время выполнения.
+
+## Файловые операции и безопасность
+
+Протокол `version:2` по-прежнему понимает `createFile` и `patch` (unified diff). Файловые операции проверяются целиком до записи и при ошибке записи делается попытка восстановления. Подробности — в [архитектуре](docs/ARCHITECTURE.md) и `prompts/protocol.md`.
+
+Новый скрипт или изменённые аргументы требуют разрешения. **Скрипты не изолированы**: могут читать секреты, изменять файлы вне Git и обращаться к сети. Требуется доверенный workspace. Неисполненные после ошибки скрипты не сохраняются и не получают разрешений; исходный запрос и статусы `skipped` остаются в истории. Скрипты не участвуют в файловой транзакции, не откатываются и останавливаются на первой ошибке (следующие команды получают `skipped`). Длительность выполнения ограничивается 60 секундами на команду; дочерние процессы некоторых скриптов могут пережить завершение основного процесса — это не полноценная песочница.
+
+При копировании output проверьте, нет ли в нём конфиденциальных данных, прежде чем отправлять их в ИИ.
+
+## Разработка и публикация
+
+Исходники организованы по модулям `src/`, автоматические тесты находятся в `test/`.
+Проверки: `npm run check`, `npm test`, `npm run build`. GitHub Actions выполняет
+их на Windows и Linux. Перед первым коммитом добавьте `package-lock.json`,
+полученный после `npm install` (в отличие от `node_modules/`, его нужно хранить в Git).
+
+Рекомендации перед первой публикацией, оформление лицензии и список исключаемых
+файлов — в [памятке по репозиторию](docs/REPOSITORY.md).
+Описание модулей и особенностей транзакций — в [архитектуре](docs/ARCHITECTURE.md).

@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "actions": [
+    {
+      "type": "createFile",
+      "path": "aibolit-example/greeting.js",
+      "content": "export const message = 'Hello from AI';\n"
+    },
+    {
+      "type": "patch",
+      "path": "aibolit-example/greeting.js",
+      "patch": "--- a/aibolit-example/greeting.js\n+++ b/aibolit-example/greeting.js\n@@ -1 +1 @@\n-export const message = 'Hello from AI';\n+export const message = 'Hello from Aibolit';\n"
+    }
+  ]
+}
