@@ -1,4 +1,4 @@
-# Публикация исходников Aibolit 0.3.4
+# Публикация исходников Aibolit
 
 ## Перед первым `git push`
 
@@ -7,9 +7,9 @@
    использует `npm ci`. `node_modules/` коммитить не нужно.
 2. Проверьте `npm run check`, `npm test`, `npm run build`. Убедитесь,
    что `npm test` проходит полностью на вашей машине.
-3. Определитесь с **лицензией** и добавьте файл `LICENSE` (например, текст MIT
-   или Apache-2.0, если хотите разрешить использование и модификацию).
-   Не добавляйте чужую лицензию без проверки условий и правообладателя.
+3. Лицензия проекта — **MIT**. Файл [`LICENSE`](../LICENSE) содержит
+   `Copyright (c) 2026 Eugene Roschin`; в `package.json` указаны `author` и
+   `license`. При публикации VSIX проверьте включение `LICENSE` в пакет.
 4. После создания репозитория укажите фактический Git URL в поле `repository`
    файла `package.json`. До этого ссылку не следует придумывать.
 5. Проверьте, что секреты, `.env`, локальные `.aibolit/`-инструкции,
@@ -33,7 +33,7 @@ git add .
 git diff --cached --check
 git diff --cached --stat
 git status
-git commit -m "Initial release: Aibolit 0.3.4"
+git commit -m "Initial release: Aibolit 0.3.5"
 ```
 
 После создания удалённого репозитория укажите его адрес через `git remote add origin ...`

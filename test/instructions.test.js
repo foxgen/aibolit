@@ -32,7 +32,7 @@ test('custom rules are appended and changes to base and custom persist', async (
     assert.match(copied, /^# My customized protocol\n/);
     assert.match(copied, /# Дополнительные пользовательские правила/);
     assert.match(copied, /Нельзя использовать сторонние библиотеки/);
-    assert.doesNotMatch(copied, /Aibolit Protocol — версии 2/);
+    assert.doesNotMatch(copied, /# Aibolit — правила взаимодействия с ИИ/);
   });
 });
 
@@ -46,11 +46,12 @@ test('empty base is rejected instead of silently copying only user rules', async
 
 test('template describes both atomic file actions and script execution', async () => {
   const content = await fs.readFile(template, 'utf8');
-  assert.match(content, /"version": 2/);
+  assert.match(content, /"version": 1/);
+  assert.match(content, /"kind": "actions"/);
   assert.match(content, /"actions": \[/);
   assert.match(content, /"type": "createFile"/);
   assert.match(content, /"type": "patch"/);
-  assert.match(content, /"version": 3/);
+  assert.doesNotMatch(content, /"version": [23]/);
   assert.match(content, /"kind": "script"/);
   assert.match(content, /--- a\/src\/new.js/);
 });

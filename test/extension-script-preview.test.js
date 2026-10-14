@@ -15,7 +15,7 @@ test('preview can be reviewed without modal blocking; denial stops and does not 
   const handlers = new Map(), messages = [], documents = [], notifications = [];
   let previewProvider;
   let clipboard = JSON.stringify({
-    version: 3, kind: 'script', requestId: 'preview-001',
+    version: 1, kind: 'script', requestId: 'preview-001',
     commands: [
       { id: 'one', args: ['--example'], script: { id: 'first-new', language: 'python', content: 'print("first")\n' } },
       { id: 'two', script: { id: 'second-new', language: 'python', content: 'print("second")\n' } },

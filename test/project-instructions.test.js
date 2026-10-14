@@ -26,7 +26,7 @@ test('project instructions are isolated per root, and copying never creates them
   await fixture(async ({ storage, first, second }) => {
     const firstRules = await projectInstructionsPath(first);
     const before = await combinedInstructions(storage, templateFile, first);
-    assert.match(before, /Aibolit Protocol — версии 2/);
+    assert.match(before, /# Aibolit — правила взаимодействия с ИИ/);
     await assert.rejects(fs.access(firstRules), { code: 'ENOENT' });
 
     await fs.writeFile(await ensureProjectInstructions(first), 'PROJECT A ONLY\n');

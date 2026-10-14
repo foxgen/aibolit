@@ -5,7 +5,8 @@ const assert = require('node:assert/strict');
 const { getActionHandler } = require('../src/actions');
 
 test('action registry: only explicit names are enabled', () => {
-  assert.equal(getActionHandler('patch', 1), getActionHandler('applyPatch', 1));
+  assert.ok(getActionHandler('patch', 1));
+  assert.throws(() => getActionHandler('applyPatch', 1), /разрешены только/);
   assert.throws(() => getActionHandler('runScript', 2), /Действие 2: разрешены только/);
   assert.throws(() => getActionHandler('__proto__', 3), /Действие 3: разрешены только/);
 });

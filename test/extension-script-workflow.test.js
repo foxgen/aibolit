@@ -14,7 +14,7 @@ test('VS Code Apply context executes script, copies result and clears only runs'
   await fs.mkdir(project);
   const handlers = new Map();
   const info = [], errors = [];
-  const request = { version: 3, kind: 'script', requestId: 'explore-1', commands: [
+  const request = { version: 1, kind: 'script', requestId: 'explore-1', commands: [
     { id: 'tree', script: { id: 'test-tree', language: 'python', content: 'print("hello-vscode")\n' } }
   ] };
   let clipboard = JSON.stringify(request);
@@ -36,7 +36,10 @@ test('VS Code Apply context executes script, copies result and clears only runs'
         return message.includes('уже выполнялся') ? 'Copy saved result' :
           message.includes('Удалить') ? 'Delete outputs' : 'Approve and run';
       },
-      async showQuickPick(items) { return items.find(x => x.action === choice); },
+      async showQuickPick(items) {
+        if (items.some(x => x.action)) return items.find(x => x.action === choice);
+        return choice === 'select' ? items : undefined;
+      },
       showInformationMessage(message) { info.push(message); },
       showErrorMessage(message) { errors.push(message); }
     }
@@ -58,6 +61,7 @@ test('VS Code Apply context executes script, copies result and clears only runs'
     await handlers.get('aibolit.executeClipboardActions')();
     assert.deepEqual(errors, []);
     const first = JSON.parse(clipboard);
+    assert.equal(first.version, 1);
     assert.equal(first.kind, 'result');
     assert.equal(first.status, 'success');
     assert.match(first.commands[0].stdout, /hello-vscode/);
@@ -71,6 +75,21 @@ test('VS Code Apply context executes script, copies result and clears only runs'
     choice = 'last';
     await handlers.get('aibolit.copyOutput')();
     assert.equal(JSON.parse(clipboard).executionId, first.executionId);
+
+    // Multiple saved runs produce a protocol-1 `results` envelope.
+    const nextRequest = { version: 1, kind: 'script', requestId: 'explore-2',
+      commands: [{ id: 'again', scriptId: 'test-tree' }] };
+    clipboard = JSON.stringify(nextRequest);
+    await handlers.get('aibolit.executeClipboardActions')();
+    assert.equal(JSON.parse(clipboard).version, 1);
+    choice = 'select';
+    await handlers.get('aibolit.copyOutput')();
+    const many = JSON.parse(clipboard);
+    assert.equal(many.version, 1);
+    assert.equal(many.kind, 'results');
+    assert.equal(many.executions.length, 2);
+    assert.ok(many.executions.every(result => result.version === 1 && result.kind === 'result'));
+
     choice = 'all';
     await handlers.get('aibolit.deleteOutputs')();
     assert.deepEqual(await fs.readdir(path.join(storage, 'runs')), []);

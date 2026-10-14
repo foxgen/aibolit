@@ -17,14 +17,13 @@ const patch = (file, from, to) =>
   `--- a/${file}\n+++ b/${file}\n@@ -1 +1 @@\n-${from}\n+${to}\n`;
 
 test('protocol: accept JSON directly, with an optional Markdown code fence', () => {
-  const message = '{"version":2,"actions":[{"type":"createFile","path":"a.txt","content":"ok"}]}';
-  assert.equal(parseContext(message).length, 1);
-  assert.equal(parseContext('```json\n' + message + '\n```').length, 1);
-  assert.equal(parseContext('```\n' + message + '\n```').length, 1);
-  assert.equal(parseContext('  \n' + message + '  \n').length, 1);
-  assert.equal(parseContext('\ufeff' + message).length, 1);
-  // Existing clipboard contexts keep working during the transition.
-  assert.equal(parseContext('AI_ACTIONS_BEGIN\n' + message + '\nAI_ACTIONS_END').length, 1);
+  const message = '{"version":1,"kind":"actions","actions":[{"type":"createFile","path":"a.txt","content":"ok"}]}';
+  assert.equal(parseContext(message).actions.length, 1);
+  assert.equal(parseContext('```json\n' + message + '\n```').actions.length, 1);
+  assert.equal(parseContext('```\n' + message + '\n```').actions.length, 1);
+  assert.equal(parseContext('  \n' + message + '  \n').actions.length, 1);
+  assert.equal(parseContext('\ufeff' + message).actions.length, 1);
+  assert.throws(() => parseContext('AI_ACTIONS_BEGIN\n' + message + '\nAI_ACTIONS_END'), /только JSON-объект/);
   assert.throws(() => parseContext(message + '\nextra'), /только JSON-объект/i);
   assert.throws(() => parseContext('Here is JSON:\n```json\n' + message + '\n```'), /только JSON-объект/i);
   assert.throws(() => parseContext('a'.repeat(257 * 1024)), /слишком большой/i);
@@ -109,7 +108,7 @@ test('multi-root projects require action.root', async () => withProject(async (r
 
 test('bare JSON example clipboard context is executable', async () => withProject(async (root, roots) => {
   const envelope = await fs.readFile(path.join(__dirname, '../example-actions.json'), 'utf8');
-  const actions = parseContext(envelope);
+  const { actions } = parseContext(envelope);
   await commit(await prepare(actions, roots));
   assert.equal(await fs.readFile(path.join(root, 'aibolit-example/greeting.js'), 'utf8'),
     "export const message = 'Hello from Aibolit';\n");

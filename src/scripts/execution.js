@@ -7,6 +7,7 @@ const { validateScriptRequest } = require('./request');
 const { initStorage, shaScript, loadScripts, saveScripts, readApprovals,
   resolveStored, listRuns, requireHistorySpace, folders, writeJson, readJson } = require('./storage');
 const { runScript } = require('./runner');
+const { PROTOCOL_VERSION } = require('../protocol');
 
 const DEFAULT_COMMANDS = { python: 'python', bash: 'bash', powershell: 'pwsh' };
 
@@ -72,7 +73,7 @@ async function executeScripts(prepared, storage, interpreterCommands = {}) {
   const directory = path.join(folders(storage).runs, executionId);
   await fs.mkdir(directory, { recursive: false });
   const result = {
-    version: 3, kind: 'stored-result', requestId: prepared.payload.requestId, executionId,
+    version: PROTOCOL_VERSION, kind: 'result', requestId: prepared.payload.requestId, executionId,
     root: prepared.root.name, status: 'running', startedAt: new Date().toISOString(), finishedAt: null,
     commands: prepared.steps.map(step => ({ id: step.id, scriptId: step.scriptId,
       language: step.language, scriptSha256: step.hash, status: 'skipped', reason: 'previous_command_failed' }))

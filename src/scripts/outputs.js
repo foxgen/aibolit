@@ -3,6 +3,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { listRuns, folders } = require('./storage');
+const { PROTOCOL_VERSION } = require('../protocol');
 
 const MAX_CLIPBOARD_BYTES = 64 * 1024;
 
@@ -28,7 +29,7 @@ function shrink(text, bytes) {
 async function toAIResult(item, limit = MAX_CLIPBOARD_BYTES) {
   const stored = item.result;
   const output = {
-    version: 3, kind: 'result', requestId: stored.requestId,
+    version: PROTOCOL_VERSION, kind: 'result', requestId: stored.requestId,
     executionId: stored.executionId, status: stored.status, commands: []
   };
   const candidates = [];

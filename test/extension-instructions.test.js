@@ -50,7 +50,7 @@ test('VS Code commands: copy base, edit custom, copy merged, edit base', async (
       subscriptions: []
     });
     await handlers.get('aibolit.copyInstructions')();
-    assert.match(clipboardText, /Aibolit Protocol — версии 2/);
+    assert.match(clipboardText, /# Aibolit — правила взаимодействия с ИИ/);
     assert.match(clipboardText, /createFile/);
     await handlers.get('aibolit.editInstructions')();
     assert.equal(shown.at(-1), path.join(storage, 'custom.md'));

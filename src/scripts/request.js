@@ -1,13 +1,15 @@
 'use strict';
 
+const { PROTOCOL_VERSION } = require('../protocol');
+
 const LANGUAGES = Object.freeze({ python: '.py', bash: '.sh', powershell: '.ps1' });
 const IDENTIFIER = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/;
 
 function validateScriptRequest(payload, roots) {
-  if (!payload || payload.version !== 3 || payload.kind !== 'script' || payload.actions !== undefined ||
+  if (!payload || payload.version !== PROTOCOL_VERSION || payload.kind !== 'script' || payload.actions !== undefined ||
       !IDENTIFIER.test(payload.requestId || '') || !Array.isArray(payload.commands) ||
       payload.commands.length < 1 || payload.commands.length > 20) {
-    throw new Error('Нужен JSON version:3, kind:"script", requestId и 1–20 commands.');
+    throw new Error(`Нужен JSON version:${PROTOCOL_VERSION}, kind:"script", requestId и 1–20 commands.`);
   }
   if (!Array.isArray(roots) || !roots.length) throw new Error('Откройте папку проекта.');
   const root = roots.length === 1

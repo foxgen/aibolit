@@ -13,7 +13,7 @@ const { usedStorageBytes } = require('../src/scripts/storage');
 const roots = [{ name: 'project', path: '.' }];
 
 function context(commands, requestId = 'req-1') {
-  return { version: 3, kind: 'script', requestId, commands };
+  return { version: 1, kind: 'script', requestId, commands };
 }
 const makeScript = (id, content) => ({ id, script: { id, language: 'python', content } });
 
@@ -47,10 +47,14 @@ test('executes sequential scripts, stops on error and copies structured result',
     assert.deepEqual(approved, [], 'preflight must not request approvals');
     const run = await executeScripts(prepared, storage);
     assert.deepEqual(approved, ['tree', 'fail'], 'do not prompt for the skipped third script');
+    assert.equal(run.result.version, 1);
+    assert.equal(run.result.kind, 'result');
     assert.equal(run.result.status, 'failed');
     assert.deepEqual(run.result.commands.map(x => x.status), ['success', 'failed', 'skipped']);
     assert.equal(run.result.commands[1].exitCode, 2);
     const ai = JSON.parse(await toAIResult(run));
+    assert.equal(ai.version, 1);
+    assert.equal(ai.kind, 'result');
     assert.match(ai.commands[0].stdout, /test output/);
     assert.match(ai.commands[1].stderr, /bad/);
     assert.equal(ai.requestId, 'req-1');

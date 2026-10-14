@@ -4,7 +4,7 @@ const vscode = require('vscode');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { ensureInstructions, ensureProjectInstructions, combinedInstructions, resetInstructions, instructionPaths, projectInstructionsPath } = require('./src/instructions');
-const { parseContext } = require('./src/protocol');
+const { parseContext, PROTOCOL_VERSION } = require('./src/protocol');
 const { prepare, commit } = require('./src/engine');
 const { prepareExecution, executeScripts } = require('./src/scripts/execution');
 const { registerScriptPreview } = require('./src/scripts/preview');
@@ -61,11 +61,11 @@ async function applyAIContext() {
     if (roots.some(root => root.scheme !== 'file')) {
       throw new Error('В этой версии поддерживаются только локальные папки проекта.');
     }
-    if (!Array.isArray(payload)) {
+    if (payload.kind === 'script') {
       await applyScriptContext(payload, roots);
       return;
     }
-    const plan = await prepare(payload, roots);
+    const plan = await prepare(payload.actions, roots);
     const checkDirty = async changes => {
       const dirty = vscode.workspace.textDocuments.filter(doc => doc.isDirty &&
         changes.some(item => item.path.toLowerCase() === doc.uri.fsPath.toLowerCase()));
@@ -183,7 +183,7 @@ async function copyOutput() {
     const outputs = [];
     for (const choice of choices) outputs.push(JSON.parse(await toAIResult(choice.item)));
     // Multiple results are still a single JSON object, limited to 64 KiB.
-    const text = JSON.stringify({ version: 3, kind: 'results', executions: outputs }, null, 2);
+    const text = JSON.stringify({ version: PROTOCOL_VERSION, kind: 'results', executions: outputs }, null, 2);
     if (Buffer.byteLength(text, 'utf8') > 64 * 1024) {
       throw new Error('Объединённый output превышает 64 КиБ. Выберите меньше выполнений.');
     }
